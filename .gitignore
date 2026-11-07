@@ -1,0 +1,25 @@
+# Whitelist: only what is needed to run the experiments is tracked.
+# Not tracked on purpose: publisher PDFs (copyright), the thesis, slides, the manuscript draft and
+# its notes, the original-code backup, and all run outputs.
+/*
+!/.gitignore
+!/README.md
+!/requirements.txt
+!/DES_phyNnurse.py
+!/Code/
+/Code/_backup_original_*/
+!/Data/
+!/Phase1_rerun/
+/Phase1_rerun/results/
+/Phase1_rerun/DATA_CHECK.md
+!/tools/
+!/Manuscript/
+/Manuscript/*
+!/Manuscript/figures/
+
+__pycache__/
+*.pyc
+*.tmp
+results_bundle_*.zip
+machine_info_*.txt
+.venv/
