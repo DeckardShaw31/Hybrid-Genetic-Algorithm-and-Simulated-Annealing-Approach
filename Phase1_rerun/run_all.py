@@ -1,6 +1,7 @@
-"""Run every Phase-1 stage in order, with logs, resume and a result bundle at the end.
+"""Run every Phase-1 and Phase-2 stage in order, with logs, resume and a result bundle at the end.
 
   python Phase1_rerun/run_all.py --workers 60                 # everything (check -> ... -> bundle)
+  python Phase1_rerun/run_all.py --workers 60 --phase 2       # only the Phase-2 stages (+ bundle)
   python Phase1_rerun/run_all.py --workers 60 --stages main   # only some stages (comma-separated)
   python Phase1_rerun/run_all.py --dry-run                    # show the commands only
 
@@ -10,7 +11,12 @@ Stages (default order):
   benchmark    physician-only runs on wang_base, wang_high, wang_problem2 (30 runs)
   main         nurse+physician runs, medium and large, 7 days x 10 runs (140 runs)
   sensitivity  one-at-a-time parameter grid, medium Monday (31 settings x --sens-runs runs)
-  summarize    tables, plan re-evaluations and figures
+  summarize    tables, plan re-evaluations and figures; writes the Phase-2 demand files
+  ssp_check    unit tests of the Phase-2 rostering model (aborts on failure)
+  ssp          Phase-2 rostering, medium and large: exact model (HiGHS) + 10 HGASA runs each
+  ssp_sensitivity  one-at-a-time HGASA grid on the medium roster (31 settings x --sens-runs runs)
+  ssp_scaling  exact model vs HGASA on 2x, 4x and 8x the large demand (exact: --time-limit per category)
+  ssp_summarize    Phase-2 tables, rosters and the scheduling sensitivity figure
   bundle       zip results + logs into results_bundle_<host>_<time>.zip in the repository root
 
 Finished optimization runs are skipped, so after an interruption simply start the same command again.
@@ -30,8 +36,11 @@ ROOT = os.path.dirname(HERE)
 RESULTS = os.path.join(HERE, "results")
 LOGS = os.path.join(RESULTS, "logs")
 PY = sys.executable
-STAGES = ["check", "validate", "benchmark", "main", "sensitivity", "summarize", "bundle"]
-GATING = {"check", "validate"}
+PHASE1 = ["check", "validate", "benchmark", "main", "sensitivity", "summarize"]
+PHASE2 = ["ssp_check", "ssp", "ssp_sensitivity", "ssp_scaling", "ssp_summarize"]
+STAGES = PHASE1 + PHASE2 + ["bundle"]
+GATING = {"check", "validate", "ssp_check"}
+SCALING = "large_x2,large_x4,large_x8"
 
 
 def default_workers():
@@ -54,6 +63,20 @@ def stage_commands(stage, a):
         return [[PY, r, "--instance", "medium,large", "--days", "0-6", "--runs", str(a.runs)] + w]
     if stage == "sensitivity":
         return [[PY, r, "--sensitivity", "--instance", "medium", "--days", "0", "--runs", str(a.sens_runs)] + w]
+    p2 = os.path.join("Phase2", "run_phase2.py")
+    if stage == "ssp_check":
+        return [[PY, os.path.join("Phase2", "tests", "test_ssp.py")]]
+    if stage == "ssp":
+        return [[PY, p2, "--instance", "medium,large", "--exact", "--hgasa", "--runs", str(a.runs),
+                 "--time-limit", str(a.time_limit)] + w]
+    if stage == "ssp_sensitivity":
+        return [[PY, p2, "--instance", "medium", "--sensitivity", "--runs", str(a.sens_runs)] + w]
+    if stage == "ssp_scaling":
+        return [[PY, p2, "--instance", SCALING, "--exact", "--hgasa", "--runs", str(a.runs),
+                 "--time-limit", str(a.time_limit)] + w]
+    if stage == "ssp_summarize":
+        return [[PY, os.path.join("Phase2", "summarize_phase2.py"), "--to-manuscript"],
+                [PY, os.path.join("Manuscript", "figures", "make_figures.py")]]
     if stage == "summarize":
         return [[PY, os.path.join("Phase1_rerun", "summarize.py"), "--to-manuscript"],
                 [PY, os.path.join("Phase1_rerun", "evaluate_plans.py"), "--wang"],
@@ -66,7 +89,7 @@ def bundle(stamp):
     host = socket.gethostname()
     path = os.path.join(ROOT, f"results_bundle_{host}_{stamp}.zip")
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
-        for folder in (RESULTS, os.path.join(ROOT, "Manuscript", "figures")):
+        for folder in (RESULTS, os.path.join(ROOT, "Phase2", "results"), os.path.join(ROOT, "Manuscript", "figures")):
             for dirpath, _, files in os.walk(folder):
                 if "legacy_model" in dirpath:
                     continue
@@ -82,11 +105,17 @@ def bundle(stamp):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--workers", type=int, default=default_workers())
-    ap.add_argument("--stages", default=",".join(STAGES), help="comma-separated subset of: " + ", ".join(STAGES))
+    ap.add_argument("--stages", default=None, help="comma-separated subset of: " + ", ".join(STAGES))
+    ap.add_argument("--phase", choices=["1", "2", "all"], default="all",
+                    help="run the stages of one phase (plus bundle); ignored when --stages is given")
+    ap.add_argument("--time-limit", type=float, default=3600.0,
+                    help="seconds per exact Phase-2 model and staff category")
     ap.add_argument("--runs", type=int, default=10, help="runs per day and instance (main, benchmark)")
     ap.add_argument("--sens-runs", type=int, default=10, help="runs per sensitivity setting")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
+    if a.stages is None:
+        a.stages = ",".join({"1": PHASE1, "2": PHASE2, "all": PHASE1 + PHASE2}[a.phase] + ["bundle"])
     stages = [s.strip() for s in a.stages.split(",") if s.strip()]
     unknown = [s for s in stages if s not in STAGES]
     if unknown:
