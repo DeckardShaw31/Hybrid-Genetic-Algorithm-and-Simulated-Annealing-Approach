@@ -26,6 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from ssp_hgasa import BASELINE  # noqa: E402
 from ssp_model import CATEGORIES, DAY_NAMES, ROOT, load_instance, roster_table  # noqa: E402
+from run_phase2 import MODEL_VERSION  # noqa: E402
 
 RES = os.path.join(HERE, "results")
 SENS_NAMES = {"population_size": "population_size", "num_generation": "generations",
@@ -49,10 +50,17 @@ def write_csv(path, rows, header=None):
 
 
 def load_json(pattern):
-    out = []
+    """Result files of the current model version only (older ones are skipped with a note)."""
+    out, stale = [], 0
     for p in sorted(glob.glob(pattern)):
         with open(p) as f:
-            out.append(json.load(f))
+            r = json.load(f)
+        if r.get("model_version") == MODEL_VERSION:
+            out.append(r)
+        else:
+            stale += 1
+    if stale:
+        print(f"note: skipped {stale} result file(s) from an older model version ({pattern})")
     return out
 
 

@@ -32,6 +32,20 @@ from ssp_hgasa import BASELINE  # noqa: E402
 from ssp_model import CATEGORIES, load_instance, parse_name  # noqa: E402
 
 RESULTS = os.path.join(HERE, "results")
+# Results made with another model version are re-run (and overwritten) automatically.
+# v2 (2026-11-09): 11-h minimum rest between shifts on consecutive days.
+MODEL_VERSION = "ssp_v2_rest11"
+
+
+def done(path):
+    """True if a result file exists and was made with the current model version."""
+    if not os.path.exists(path):
+        return False
+    try:
+        with open(path) as f:
+            return json.load(f).get("model_version") == MODEL_VERSION
+    except (OSError, ValueError):
+        return False
 SENSITIVITY_GRID = {   # one-at-a-time grid of the thesis (baseline values excluded; baseline cooling rate 0.99)
     "population_size": [20, 30, 40, 60, 70, 80],
     "num_generation": [100, 150, 180, 220, 250, 300],
@@ -71,12 +85,13 @@ def run_job(job):
     if job["kind"] == "exact":
         from ssp_milp import solve_category
         res = solve_category(cats[job["category"]], time_limit=job["time_limit"], seed=job["seed"])
-        res["finished_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        res.update({"finished_at": time.strftime("%Y-%m-%d %H:%M:%S"), "model_version": MODEL_VERSION})
         write_json(exact_path(job["instance"], job["category"]), res)
         return job, res
     from ssp_hgasa import run_hgasa
     res, history = run_hgasa(cats, job["params"], job["seed"])
-    res.update({"tag": job["tag"], "run": job["run"], "finished_at": time.strftime("%Y-%m-%d %H:%M:%S")})
+    res.update({"tag": job["tag"], "run": job["run"], "finished_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "model_version": MODEL_VERSION})
     json_path, hist_path = hgasa_paths(job["instance"], job["tag"], job["run"])
     os.makedirs(os.path.dirname(hist_path), exist_ok=True)
     with open(hist_path, "w", newline="") as f:
@@ -122,12 +137,12 @@ def build_jobs(a):
     for inst in a.instances:
         if a.exact:
             for c in CATEGORIES:
-                if a.overwrite or not os.path.exists(exact_path(inst, c)):
+                if a.overwrite or not done(exact_path(inst, c)):
                     jobs.append({"kind": "exact", "instance": inst, "category": c, "time_limit": a.time_limit,
                                  "seed": a.seed})
         for tag, params in settings:
             for run in range(1, a.runs + 1):
-                if a.overwrite or not os.path.exists(hgasa_paths(inst, tag, run)[0]):
+                if a.overwrite or not done(hgasa_paths(inst, tag, run)[0]):
                     jobs.append({"kind": "hgasa", "instance": inst, "tag": tag, "run": run, "params": params,
                                  "seed": job_seed(a.seed, inst, run)})
     jobs.sort(key=estimated_cost, reverse=True)
