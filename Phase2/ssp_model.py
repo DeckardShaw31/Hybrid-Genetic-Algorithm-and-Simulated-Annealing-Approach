@@ -12,8 +12,12 @@ Rules (manuscript constraints (9)-(17)):
   ft_per_day       at most one full-time shift per day                                  (10, left)
   shifts_per_day   at most two shifts per day                                            (10, right)
   overlap          no two assigned shifts share an hour, also across midnight            (11)
-  rest             two fixed shifts off after each fixed shift (Wang et al.):            (12)
-                   evening(j) excludes day(j+1); night(j) excludes day(j+1), evening(j+1)
+  rest             at least MIN_REST = 11 h between a shift and any shift of the next day  (12)
+                   (the EU daily-rest standard). On full-time shifts this is exactly the rule of
+                   Wang et al., two fixed shifts off after each fixed shift: evening(j) excludes
+                   day(j+1); night(j) excludes day(j+1) and evening(j+1). It also covers part-time
+                   shifts, e.g. night(j) excludes PT 09:00 on day j+1. Shifts on the same day may
+                   be combined (split shifts) if they do not overlap.
   W1               at most W1 consecutive working days                                   (14)
   W2               at most W2 working days per week                                      (15)
   E1               at most E1 consecutive night shifts                                   (16)
@@ -34,6 +38,7 @@ PHASE1_RESULTS = os.path.join(ROOT, "Phase1_rerun", "results")
 DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 FT_SHIFTS = [("day", 7, 15), ("evening", 15, 22), ("night", 22, 31)]   # end 31 = 07:00 next day
 PT_LENGTH = 3
+MIN_REST = 11   # hours between the end of a shift and the start of a shift on the next day
 RULES = {"W1": 5, "W2": 6, "E1": 3, "E2": 5}
 CATEGORIES = ["nurse", "physician"]
 
@@ -119,10 +124,11 @@ def _conflict_pairs(shifts, n_days):
         for b in range(a + 1, len(keys)):
             if hours[keys[a]] & hours[keys[b]]:
                 pairs.add((idx(*keys[a]), idx(*keys[b])))
-    for j in range(n_days - 1):          # rest rule (12)
-        pairs.add((idx(j, 1), idx(j + 1, 0)))
-        pairs.add((idx(j, 2), idx(j + 1, 0)))
-        pairs.add((idx(j, 2), idx(j + 1, 1)))
+    for j in range(n_days - 1):          # rest rule (12): MIN_REST hours between shifts on consecutive days
+        for a, (_, _, end_a) in enumerate(shifts):
+            for b, (_, start_b, _) in enumerate(shifts):
+                if 24 + start_b - end_a < MIN_REST:
+                    pairs.add((idx(j, a), idx(j + 1, b)))
     return sorted(pairs)
 
 

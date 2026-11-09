@@ -35,6 +35,9 @@ def test_rules():
     r = blank(); r[0, EVE] = 1; r[1, DAY] = 1; cases.append(("overlap_or_rest", r))                # rest
     r = blank(); r[0, NIGHT] = 1; r[1, DAY] = 1; cases.append(("overlap_or_rest", r))              # rest
     r = blank(); r[0, NIGHT] = 1; r[1, EVE] = 1; cases.append(("overlap_or_rest", r))              # rest
+    r = blank(); r[0, NIGHT] = 1; r[1, PT9] = 1; cases.append(("overlap_or_rest", r))              # 07:00 -> 09:00
+    r = blank(); r[0, PT19] = 1; r[1, DAY] = 1; cases.append(("overlap_or_rest", r))               # 22:00 -> 07:00
+    r = blank(); r[0, NIGHT] = 1; r[1, PT19] = 1; cases.append(("ok", r))                          # 12 h rest
     r = blank(); r[0, NIGHT] = 1; r[1, NIGHT] = 1; cases.append(("ok", r))                         # noqa: E702
     r = blank(); r[0, DAY] = 1; r[1, EVE] = 1; cases.append(("ok", r))                             # noqa: E702
     r = blank(); r[:6, DAY] = 1; cases.append(("W1", r))                                           # 6 in a row

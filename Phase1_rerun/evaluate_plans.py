@@ -95,6 +95,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--wang", action="store_true")
     ap.add_argument("--from-results", action="store_true")
+    ap.add_argument("--all-days", action="store_true", help="with --from-results: rule-based plans for every day")
     ap.add_argument("--plan", nargs=4, metavar=("INSTANCE", "DAY", "NURSES", "PHYSICIANS"))
     ap.add_argument("--reps", type=int, default=1000)
     ap.add_argument("--seed", type=int, default=2025)
@@ -108,7 +109,7 @@ def main():
             for day, r in sorted(best_plans_from_results(inst).items()):
                 n, p = r["best_chromosome"]
                 rows.append((inst, day, f"re-run best (run {r['run']})", n, p, None))
-                if day == 0:
+                if day == 0 or args.all_days:
                     rows += [(inst, day, rn, rn_n, rn_p, None) for rn, rn_n, rn_p in rule_based(n, p)]
     if args.plan:
         inst, day, n, p = args.plan
