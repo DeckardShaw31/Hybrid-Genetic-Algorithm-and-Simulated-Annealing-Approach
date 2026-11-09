@@ -63,6 +63,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--to-manuscript", action="store_true")
     ap.add_argument("--include-smoke", action="store_true")
+    ap.add_argument("--plan-tag", default="baseline",
+                    help="runs whose best daily plans form the weekly plan and the Phase-2 demand "
+                         "(baseline or enhanced)")
     ap.add_argument("--results", default=None, help="results folder (default Phase1_rerun/results)")
     args = ap.parse_args()
     global RES
@@ -107,7 +110,7 @@ def main():
         inst = None
         weekly, demand = [], []
         for d in range(7):
-            best = best_of.get(("nurse_physician", instance, "baseline", d))
+            best = best_of.get(("nurse_physician", instance, args.plan_tag, d))
             if best is None:
                 continue
             inst = inst or instances.get_instance(instance)

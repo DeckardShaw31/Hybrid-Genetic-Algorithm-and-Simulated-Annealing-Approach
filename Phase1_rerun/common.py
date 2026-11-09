@@ -29,6 +29,9 @@ BASELINE = {
     "final_temperature": 1.0,
     "cooling_rate": 0.95,
     "n_reps": 500,
+    # Enhancements (off in the baseline; the "enhanced" variant uses seed_fraction=0.2, polish=1):
+    "seed_fraction": 0.0,   # share of the initial population built from the offered workload
+    "polish": 0,            # 1 = final +/-1 coordinate descent on the SA's best plan
 }
 
 # Objective weights. Nurse+physician: alpha (PT hour), beta (nurse hour), gamma (waiting), delta (delay).

@@ -96,6 +96,7 @@ def main():
     ap.add_argument("--wang", action="store_true")
     ap.add_argument("--from-results", action="store_true")
     ap.add_argument("--all-days", action="store_true", help="with --from-results: rule-based plans for every day")
+    ap.add_argument("--plan-tag", default="baseline", help="with --from-results: runs to take the plans from")
     ap.add_argument("--plan", nargs=4, metavar=("INSTANCE", "DAY", "NURSES", "PHYSICIANS"))
     ap.add_argument("--reps", type=int, default=1000)
     ap.add_argument("--seed", type=int, default=2025)
@@ -106,7 +107,7 @@ def main():
         rows += [(inst, 0, name, None, plan, pub) for inst, name, plan, pub in WANG_PLANS]
     if args.from_results:
         for inst in ("medium", "large"):
-            for day, r in sorted(best_plans_from_results(inst).items()):
+            for day, r in sorted(best_plans_from_results(inst, args.plan_tag).items()):
                 n, p = r["best_chromosome"]
                 rows.append((inst, day, f"re-run best (run {r['run']})", n, p, None))
                 if day == 0 or args.all_days:

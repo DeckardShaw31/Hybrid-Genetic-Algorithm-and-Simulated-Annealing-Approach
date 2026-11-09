@@ -185,6 +185,86 @@ class Operators:
                            SA.neighbourhood_structure4][k](c))
 
 
+def _truncated_exp_mean(scale, cap):
+    q = math.exp(-cap / scale)
+    return scale - cap * q / (1 - q)
+
+
+def offered_load(mode, inst, day):
+    """Offered workload per clock hour (staff busy on average, ignoring queueing): physicians and nurses.
+
+    Physician minutes per patient = first consultation + p_exam x revisit (truncated exponential means);
+    nurses also triage every patient (nurse-physician mode).
+    """
+    cfg = inst.config(nurses=(mode == "nurse_physician"))
+    if cfg.consult_cap and cfg.consult_mean_is_scale:
+        first, revisit = (_truncated_exp_mean(m, cfg.consult_cap * m) for m in cfg.consult_means)
+    else:
+        first, revisit = cfg.consult_means
+    phys_min = first + cfg.p_exam * revisit
+    nurse_min = phys_min + (cfg.triage_mean if mode == "nurse_physician" else 0.0)
+    rates = inst.day_rates(day)
+    return [r * phys_min / 60 for r in rates], [r * nurse_min / 60 for r in rates]
+
+
+def load_based_seeds(mode, inst, day, ops, count):
+    """Feasible plans sized from the offered load: staff per FT shift = ceil(peak load / rho), rho drawn from
+    a range of target utilizations, with a random +/-1 perturbation and occasionally one PT shift at the hour
+    with the largest shortfall. Used to seed part of the initial population (enhanced variant)."""
+    a_phys, a_nurse = offered_load(mode, inst, day)
+    seeds, seen = [], set()
+    for _ in range(200 * max(count, 1)):
+        if len(seeds) >= count:
+            break
+        rho = np.random.choice([0.7, 0.8, 0.9, 1.0])
+        phys = [0] * (3 + ops.m)
+        nurses = [0] * (3 + ops.m)
+        for k, name in enumerate(FT_ORDER):
+            hours = ft_hours_covered(name)
+            p = math.ceil(max(a_phys[h] for h in hours) / rho) + int(np.random.choice([-1, 0, 0, 1]))
+            phys[k] = int(min(max(p, 1), inst.rooms))
+            n = math.ceil(max(a_nurse[h] for h in hours) / rho) + int(np.random.choice([-1, 0, 0, 1]))
+            nurses[k] = int(max(n, phys[k], 1))
+        if ops.m and np.random.random() < 0.3:
+            lv = hourly_levels(phys, inst.pt_starts)
+            gap = [a_phys[s] / rho - lv[s] for s in inst.pt_starts]
+            i = int(np.argmax(gap))
+            phys[3 + i] += 1
+            nurses[3 + i] += 1
+        c = np.array([nurses, phys]) if mode == "nurse_physician" else np.array(phys)
+        key = c.tobytes()
+        if key in seen or not ops.valid(c):
+            continue
+        seen.add(key)
+        seeds.append(c)
+    return seeds
+
+
+def polish(ev, ops, best, best_score, best_el, max_passes=20):
+    """Best-improvement coordinate descent: try +/-1 on every gene (both rows), move to the best improving
+    feasible neighbour, repeat until no neighbour improves (enhanced variant). Evaluations use the run's
+    common random numbers and cache."""
+    passes, moves = 0, 0
+    while passes < max_passes:
+        passes += 1
+        cand_best = None
+        flat = np.asarray(best)
+        for idx in np.ndindex(flat.shape):
+            for step in (-1, 1):
+                c = flat.copy()
+                c[idx] += step
+                if not ops.valid(c):
+                    continue
+                s, e = ev(c)
+                if s < best_score - 1e-9 and (cand_best is None or s < cand_best[1]):
+                    cand_best = (c, s, e)
+        if cand_best is None:
+            break
+        best, best_score, best_el = cand_best[0], cand_best[1], list(cand_best[2])
+        moves += 1
+    return best, best_score, best_el, passes, moves
+
+
 def run_hgasa(mode, inst, day, params, job_seed, n_eval=None, progress=None):
     """One SO-HGASA run. Returns a result dict and the convergence history."""
     random.seed(job_seed)
@@ -196,8 +276,10 @@ def run_hgasa(mode, inst, day, params, job_seed, n_eval=None, progress=None):
     t_start = time.perf_counter()
 
     population, scores, elements = [], [], []
-    for _ in range(params["population_size"]):
-        c = ops.random_feasible()
+    n_seed = int(round(params.get("seed_fraction", 0.0) * params["population_size"]))
+    seeds = load_based_seeds(mode, inst, day, ops, n_seed) if n_seed else []
+    for i in range(params["population_size"]):
+        c = seeds[i] if i < len(seeds) else ops.random_feasible()
         s, e = ev(c)
         population.append(c); scores.append(s); elements.append(e)
     order = np.argsort(scores)
@@ -239,6 +321,11 @@ def run_hgasa(mode, inst, day, params, job_seed, n_eval=None, progress=None):
         temperature *= params["cooling_rate"]
         it += 1
 
+    sa_best_score, polish_passes, polish_moves = best_score, 0, 0
+    if params.get("polish", 0):
+        best, best_score, best_el, polish_passes, polish_moves = polish(ev, ops, best, best_score, best_el)
+        history.append({"phase": "polish", "iteration": polish_passes, "best": best_score, "temperature": None})
+
     runtime = time.perf_counter() - t_start
     reeval = ev.reevaluate(best, n_eval or params["n_reps"], crn_seed + 1_000_003)
     result = {
@@ -248,6 +335,8 @@ def run_hgasa(mode, inst, day, params, job_seed, n_eval=None, progress=None):
         "best_objective_crn": best_score, "best_elements_crn": best_el,
         "ga_best_chromosome": ga_best[0].tolist(), "ga_best_objective_crn": ga_best[1],
         "sa_iterations": it, "unique_evaluations": len(ev.cache), "cache_hits": ev.hits,
+        "seeded": len(seeds), "sa_best_objective_crn": sa_best_score,
+        "polish_passes": polish_passes, "polish_moves": polish_moves,
         "runtime_s": runtime, "simulation_s": ev.sim_seconds, "reevaluation": reeval,
     }
     return result, history

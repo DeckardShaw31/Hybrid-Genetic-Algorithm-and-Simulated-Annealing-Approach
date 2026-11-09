@@ -29,7 +29,9 @@ from ssp_model import CATEGORIES
 
 BASELINE = {"population_size": 50, "num_generation": 200, "tournament_size": 3, "crossover_probability": 1.0,
             "mutation_probability": 0.3, "initial_temperature": 100.0, "final_temperature": 1.0,
-            "cooling_rate": 0.99, "pool_factor": 1.5, "bias": 2.0}
+            "cooling_rate": 0.99, "pool_factor": 1.5, "bias": 2.0,
+            "eliminate": 0}   # 1 = staff-elimination local search on the GA and SA best (enhanced variant)
+EJECTION_SAMPLE = 40
 MOVE_ATTEMPTS = 50
 
 
@@ -160,6 +162,65 @@ def neighbour(cats, sol, move, rng):
     return None
 
 
+def _can_add(cat, row, j, i):
+    if row[j, i]:
+        return False
+    row[j, i] = 1
+    ok = cat.row_ok(row)
+    row[j, i] = 0
+    return ok
+
+
+def _reassign(cat, r, s, j, i, active, rng):
+    """Give assignment (j, i) of member s to another active member: directly, or by a one-step ejection chain
+    (t takes (j, i) and hands one of its own assignments to u). Modifies r in place; returns success."""
+    others = [t for t in active if t != s]
+    days = r.any(axis=2).sum(axis=1)
+    direct = [t for t in others if _can_add(cat, r[t], j, i)]
+    if direct:
+        t = max(direct, key=lambda q: (days[q], rng.random()))   # concentrate work on busy members
+        r[s, j, i], r[t, j, i] = 0, 1
+        return True
+    cand = others if len(others) <= EJECTION_SAMPLE else list(rng.choice(others, EJECTION_SAMPLE, replace=False))
+    for t in cand:
+        for j2, i2 in np.argwhere(r[t] == 1):
+            r[t, j2, i2] = 0
+            if _can_add(cat, r[t], j, i):
+                r[t, j, i] = 1
+                for u in others:
+                    if u != t and _can_add(cat, r[u], j2, i2):
+                        r[u, j2, i2] = 1
+                        r[s, j, i] = 0
+                        return True
+                r[t, j, i] = 0
+            r[t, j2, i2] = 1
+    return False
+
+
+def eliminate(cat, roster, rng, max_rounds=10000):
+    """Staff-elimination local search: repeatedly try to empty the least-used active member by reassigning all
+    of its shifts (directly or by one-step ejection chains). Coverage is preserved, every intermediate row is
+    checked against all rules, and the head count never increases. Returns (roster, members removed)."""
+    r = roster.copy()
+    removed = 0
+    for _ in range(max_rounds):
+        load = r.reshape(len(r), -1).sum(axis=1)
+        active = [s for s in np.argsort(load, kind="stable") if load[s] > 0]
+        success = False
+        for s in active:
+            trial = r.copy()
+            jobs = [tuple(x) for x in np.argwhere(trial[s] == 1)]
+            rng.shuffle(jobs)
+            if all(_reassign(cat, trial, s, j, i, active, rng) for j, i in jobs):
+                r = trial
+                removed += 1
+                success = True
+                break
+        if not success:
+            break
+    return r, removed
+
+
 def run_hgasa(cats, params, seed, log_every=0):
     """One HGASA run. Returns (result dict, history list)."""
     p = dict(BASELINE)
@@ -171,6 +232,8 @@ def run_hgasa(cats, params, seed, log_every=0):
 
     pop = [{c: construct(cats[c], pools[c], rng, p["bias"]) for c in CATEGORIES}
            for _ in range(p["population_size"])]
+    if p["eliminate"] >= 2:   # also tighten every initial roster
+        pop = [{c: eliminate(cats[c], s[c], rng)[0] for c in CATEGORIES} for s in pop]
     fit = [fitness(cats, s) for s in pop]
     order = np.argsort(fit, kind="stable")
     pop, fit = [pop[q] for q in order], [fit[q] for q in order]
@@ -195,6 +258,14 @@ def run_hgasa(cats, params, seed, log_every=0):
     ga_best = fit[0]
 
     current, cur_fit = pop[0], fit[0]
+    removed = {"after_ga": 0, "after_sa": 0}
+    if p["eliminate"]:
+        current = dict(current)
+        for c in CATEGORIES:
+            current[c], k = eliminate(cats[c], current[c], rng)
+            removed["after_ga"] += k
+        cur_fit = fitness(cats, current)
+        history.append({"phase": "eliminate", "iteration": 0, "best": cur_fit, "temperature": ""})
     best, best_fit = current, cur_fit
     temp, it, accepted, no_move = p["initial_temperature"], 0, 0, 0
     while temp >= p["final_temperature"]:
@@ -214,10 +285,19 @@ def run_hgasa(cats, params, seed, log_every=0):
         history.append({"phase": "SA", "iteration": it, "best": best_fit, "temperature": round(temp, 6)})
         temp *= p["cooling_rate"]
 
-    problems = [f"{c}: {v}" for c in CATEGORIES for v in cats[c].roster_violations(best[c])]
+    sa_best = best_fit
+    if p["eliminate"]:
+        best = dict(best)
+        for c in CATEGORIES:
+            best[c], k = eliminate(cats[c], best[c], rng)
+            removed["after_sa"] += k
+        best_fit = fitness(cats, best)
+        history.append({"phase": "eliminate", "iteration": 1, "best": best_fit, "temperature": ""})
+
+    problems =[f"{c}: {v}" for c in CATEGORIES for v in cats[c].roster_violations(best[c])]
     result = {
         "instance": cats["nurse"].instance, "seed": int(seed), "params": p, "pool": pools,
-        "best": int(best_fit), "ga_best": int(ga_best),
+        "best": int(best_fit), "ga_best": int(ga_best), "sa_best": int(sa_best), "eliminated": removed,
         "nurses": cats["nurse"].head_count(best["nurse"]),
         "physicians": cats["physician"].head_count(best["physician"]),
         "lower_bound": {c: cats[c].lower_bound() for c in CATEGORIES},

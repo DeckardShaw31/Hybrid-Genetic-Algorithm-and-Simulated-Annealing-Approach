@@ -37,15 +37,32 @@ RESULTS = os.path.join(HERE, "results")
 MODEL_VERSION = "ssp_v2_rest11"
 
 
-def done(path):
-    """True if a result file exists and was made with the current model version."""
+_DEMAND_HASH = {}
+
+
+def demand_hash(instance):
+    """Fingerprint of an instance's demand, so results computed for an older Phase-1 plan are re-run."""
+    if instance not in _DEMAND_HASH:
+        cats = load_instance(instance)
+        blob = b"".join(cats[c].demand.astype(np.int64).tobytes() for c in CATEGORIES)
+        _DEMAND_HASH[instance] = format(zlib.crc32(blob), "08x")
+    return _DEMAND_HASH[instance]
+
+
+def done(path, instance):
+    """True if a result file exists, was made with the current model version and for the current demand.
+    Results without a demand fingerprint (made before it was recorded) are accepted if the version matches."""
     if not os.path.exists(path):
         return False
     try:
         with open(path) as f:
-            return json.load(f).get("model_version") == MODEL_VERSION
+            r = json.load(f)
     except (OSError, ValueError):
         return False
+    if r.get("model_version") != MODEL_VERSION:
+        return False
+    return r.get("demand_hash", demand_hash(instance)) == demand_hash(instance)
+
 SENSITIVITY_GRID = {   # one-at-a-time grid of the thesis (baseline values excluded; baseline cooling rate 0.99)
     "population_size": [20, 30, 40, 60, 70, 80],
     "num_generation": [100, 150, 180, 220, 250, 300],
@@ -85,13 +102,14 @@ def run_job(job):
     if job["kind"] == "exact":
         from ssp_milp import solve_category
         res = solve_category(cats[job["category"]], time_limit=job["time_limit"], seed=job["seed"])
-        res.update({"finished_at": time.strftime("%Y-%m-%d %H:%M:%S"), "model_version": MODEL_VERSION})
+        res.update({"finished_at": time.strftime("%Y-%m-%d %H:%M:%S"), "model_version": MODEL_VERSION,
+                    "demand_hash": demand_hash(job["instance"])})
         write_json(exact_path(job["instance"], job["category"]), res)
         return job, res
     from ssp_hgasa import run_hgasa
     res, history = run_hgasa(cats, job["params"], job["seed"])
     res.update({"tag": job["tag"], "run": job["run"], "finished_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-                "model_version": MODEL_VERSION})
+                "model_version": MODEL_VERSION, "demand_hash": demand_hash(job["instance"])})
     json_path, hist_path = hgasa_paths(job["instance"], job["tag"], job["run"])
     os.makedirs(os.path.dirname(hist_path), exist_ok=True)
     with open(hist_path, "w", newline="") as f:
@@ -137,12 +155,12 @@ def build_jobs(a):
     for inst in a.instances:
         if a.exact:
             for c in CATEGORIES:
-                if a.overwrite or not done(exact_path(inst, c)):
+                if a.overwrite or not done(exact_path(inst, c), inst):
                     jobs.append({"kind": "exact", "instance": inst, "category": c, "time_limit": a.time_limit,
                                  "seed": a.seed})
         for tag, params in settings:
             for run in range(1, a.runs + 1):
-                if a.overwrite or not done(hgasa_paths(inst, tag, run)[0]):
+                if a.overwrite or not done(hgasa_paths(inst, tag, run)[0], inst):
                     jobs.append({"kind": "hgasa", "instance": inst, "tag": tag, "run": run, "params": params,
                                  "seed": job_seed(a.seed, inst, run)})
     jobs.sort(key=estimated_cost, reverse=True)

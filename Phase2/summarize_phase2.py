@@ -26,7 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from ssp_hgasa import BASELINE  # noqa: E402
 from ssp_model import CATEGORIES, DAY_NAMES, ROOT, load_instance, roster_table  # noqa: E402
-from run_phase2 import MODEL_VERSION  # noqa: E402
+from run_phase2 import MODEL_VERSION, demand_hash  # noqa: E402
 
 RES = os.path.join(HERE, "results")
 SENS_NAMES = {"population_size": "population_size", "num_generation": "generations",
@@ -89,6 +89,8 @@ def main():
     for res in load_json(os.path.join(RES, "hgasa", "*", "*", "run*.json")):
         if res["tag"] == "smoke":
             continue
+        if res.get("demand_hash", demand_hash(res["instance"])) != demand_hash(res["instance"]):
+            continue   # computed for an older Phase-1 plan
         runs.append({"instance": res["instance"], "tag": res["tag"], "run": res["run"], "staff": res["best"],
                      "nurses": res["nurses"], "physicians": res["physicians"], "ga_best": res["ga_best"],
                      "runtime_s": res["runtime_s"], "valid": res["valid"], "sa_iterations": res["sa_iterations"],
@@ -106,6 +108,8 @@ def main():
             row[f"LB_{c}"] = cats[c].lower_bound()
         row["LB"] = row["LB_nurse"] + row["LB_physician"]
         exact = {c: (load_json(os.path.join(RES, "exact", inst, f"{c}.json")) or [None])[0] for c in CATEGORIES}
+        exact = {c: (e if e and e.get("demand_hash", demand_hash(inst)) == demand_hash(inst) else None)
+                 for c, e in exact.items()}
         if all(exact.values()):
             for c in CATEGORIES:
                 row[f"exact_{c}"] = exact[c]["objective"]
@@ -127,21 +131,24 @@ def main():
             if ok:
                 roster_csv(inst, {c: exact[c]["roster"] for c in CATEGORIES},
                            os.path.join(RES, f"roster_{inst}_exact.csv"))
-        rs = [r for r in runs if r["instance"] == inst and r["tag"] == "baseline"]
-        if rs:
+        for tag, pre in (("baseline", "hgasa"), ("enhanced", "hgasa_enh")):
+            rs = [r for r in runs if r["instance"] == inst and r["tag"] == tag]
+            if not rs:
+                continue
             best = min(rs, key=lambda r: (r["staff"], r["runtime_s"]))
-            row.update({"hgasa_runs": len(rs), "hgasa_best": best["staff"],
-                        "hgasa_best_split": f"{best['nurses']}+{best['physicians']}",
-                        "hgasa_mean": round(statistics.mean(r["staff"] for r in rs), 2),
-                        "hgasa_sd": round(statistics.stdev(r["staff"] for r in rs), 2) if len(rs) > 1 else 0,
-                        "hgasa_worst": max(r["staff"] for r in rs),
-                        "hgasa_mean_s": round(statistics.mean(r["runtime_s"] for r in rs), 1),
-                        "hgasa_all_valid": all(r["valid"] for r in rs)})
+            row.update({f"{pre}_runs": len(rs), f"{pre}_best": best["staff"],
+                        f"{pre}_best_split": f"{best['nurses']}+{best['physicians']}",
+                        f"{pre}_mean": round(statistics.mean(r["staff"] for r in rs), 2),
+                        f"{pre}_sd": round(statistics.stdev(r["staff"] for r in rs), 2) if len(rs) > 1 else 0,
+                        f"{pre}_worst": max(r["staff"] for r in rs),
+                        f"{pre}_mean_s": round(statistics.mean(r["runtime_s"] for r in rs), 1),
+                        f"{pre}_all_valid": all(r["valid"] for r in rs)})
             if row.get("exact"):
-                row["gap_best_pct"] = round(100 * (row["hgasa_best"] - row["exact"]) / row["exact"], 1)
-                row["gap_mean_pct"] = round(100 * (row["hgasa_mean"] - row["exact"]) / row["exact"], 1)
-            res = load_json(os.path.join(RES, "hgasa", inst, "baseline", f"run{best['run']:02d}.json"))[0]
-            roster_csv(inst, res["roster"], os.path.join(RES, f"roster_{inst}_hgasa.csv"))
+                g = "gap" if tag == "baseline" else "gap_enh"
+                row[f"{g}_best_pct"] = round(100 * (row[f"{pre}_best"] - row["exact"]) / row["exact"], 1)
+                row[f"{g}_mean_pct"] = round(100 * (row[f"{pre}_mean"] - row["exact"]) / row["exact"], 1)
+            res = load_json(os.path.join(RES, "hgasa", inst, tag, f"run{best['run']:02d}.json"))[0]
+            roster_csv(inst, res["roster"], os.path.join(RES, f"roster_{inst}_{pre}.csv"))
         table.append(row)
     if table:
         keys = []

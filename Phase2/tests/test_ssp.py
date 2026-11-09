@@ -104,7 +104,23 @@ def test_exact_vs_hgasa():
     print(f"ok  medium: LB {sum(cats[c].lower_bound() for c in cats)} <= exact {total} <= HGASA {h['best']}")
 
 
+def test_elimination():
+    from ssp_hgasa import eliminate
+    cats = load_instance("large")
+    rng = np.random.default_rng(5)
+    for c, cat in cats.items():
+        for _ in range(3):
+            r = construct(cat, pool_size(cat, 1.5), rng)
+            before = cat.head_count(r)
+            r2, removed = eliminate(cat, r, rng)
+            assert not cat.roster_violations(r2), cat.roster_violations(r2)[:5]
+            assert np.array_equal(r2.sum(axis=0), cat.demand)
+            assert cat.head_count(r2) == before - removed <= before
+    print("ok  staff elimination keeps rosters feasible and covering, never adds staff (large)")
+
+
 if __name__ == "__main__":
+    test_elimination()
     test_rules()
     test_milp_matches_checker()
     test_construction()

@@ -17,6 +17,9 @@ Stages (default order):
   ssp_sensitivity  one-at-a-time HGASA grid on the medium roster (31 settings x --sens-runs runs)
   ssp_scaling  exact model vs HGASA on 2x, 4x and 8x the large demand (exact: --time-limit per category)
   ssp_summarize    Phase-2 tables, rosters and the scheduling sensitivity figure
+  --phase improve: benchmark_enh, main_enh (enhanced SO-HGASA), summarize_enh (weekly plans and Phase-2
+                   demand from the enhanced runs), then Phase 2 on that demand with baseline and enhanced
+                   HGASA (ssp, ssp_enh, ssp_scaling, ssp_scaling_enh, ssp_sensitivity, ssp_summarize)
   bundle       zip results + logs into results_bundle_<host>_<time>.zip in the repository root
 
 Finished optimization runs are skipped, so after an interruption simply start the same command again.
@@ -38,7 +41,13 @@ LOGS = os.path.join(RESULTS, "logs")
 PY = sys.executable
 PHASE1 = ["check", "validate", "benchmark", "main", "sensitivity", "summarize"]
 PHASE2 = ["ssp_check", "ssp", "ssp_sensitivity", "ssp_scaling", "ssp_summarize"]
-STAGES = PHASE1 + PHASE2 + ["bundle"]
+# Enhanced algorithms (load-based seeding + polishing in SO-HGASA; staff elimination in rostering HGASA).
+# The weekly plans of the enhanced SO-HGASA become the Phase-2 demand, so Phase 2 is re-run on them.
+IMPROVE = ["check", "benchmark_enh", "main_enh", "summarize_enh", "ssp_check", "ssp", "ssp_enh",
+           "ssp_scaling", "ssp_scaling_enh", "ssp_sensitivity", "ssp_summarize"]
+STAGES = list(dict.fromkeys(PHASE1 + PHASE2 + IMPROVE)) + ["bundle"]
+ENH1 = ["--set", "seed_fraction=0.2", "--set", "polish=1", "--tag", "enhanced"]
+ENH2 = ["--set", "eliminate=1", "--tag", "enhanced"]
 GATING = {"check", "validate", "ssp_check"}
 SCALING = "large_x2,large_x4,large_x8"
 
@@ -59,6 +68,16 @@ def stage_commands(stage, a):
     if stage == "benchmark":
         return [[PY, r, "--mode", "physician_only", "--instance", "wang_base,wang_high,wang_problem2",
                  "--days", "0", "--runs", str(a.runs)] + w]
+    if stage == "benchmark_enh":
+        return [[PY, r, "--mode", "physician_only", "--instance", "wang_base,wang_high,wang_problem2",
+                 "--days", "0", "--runs", str(a.runs)] + ENH1 + w]
+    if stage == "main_enh":
+        return [[PY, r, "--instance", "medium,large", "--days", "0-6", "--runs", str(a.runs)] + ENH1 + w]
+    if stage == "summarize_enh":
+        return [[PY, os.path.join("Phase1_rerun", "summarize.py"), "--to-manuscript", "--plan-tag", "enhanced"],
+                [PY, os.path.join("Phase1_rerun", "evaluate_plans.py"), "--from-results", "--all-days",
+                 "--plan-tag", "enhanced", "--label", "results_alldays_enhanced"],
+                [PY, os.path.join("Manuscript", "figures", "make_figures.py")]]
     if stage == "main":
         return [[PY, r, "--instance", "medium,large", "--days", "0-6", "--runs", str(a.runs)] + w]
     if stage == "sensitivity":
@@ -69,6 +88,10 @@ def stage_commands(stage, a):
     if stage == "ssp":
         return [[PY, p2, "--instance", "medium,large", "--exact", "--hgasa", "--runs", str(a.runs),
                  "--time-limit", str(a.time_limit)] + w]
+    if stage == "ssp_enh":
+        return [[PY, p2, "--instance", "medium,large", "--hgasa", "--runs", str(a.runs)] + ENH2 + w]
+    if stage == "ssp_scaling_enh":
+        return [[PY, p2, "--instance", SCALING, "--hgasa", "--runs", str(a.runs)] + ENH2 + w]
     if stage == "ssp_sensitivity":
         return [[PY, p2, "--instance", "medium", "--sensitivity", "--runs", str(a.sens_runs)] + w]
     if stage == "ssp_scaling":
@@ -106,7 +129,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--workers", type=int, default=default_workers())
     ap.add_argument("--stages", default=None, help="comma-separated subset of: " + ", ".join(STAGES))
-    ap.add_argument("--phase", choices=["1", "2", "all"], default="all",
+    ap.add_argument("--phase", choices=["1", "2", "all", "improve"], default="all",
                     help="run the stages of one phase (plus bundle); ignored when --stages is given")
     ap.add_argument("--time-limit", type=float, default=3600.0,
                     help="seconds per exact Phase-2 model and staff category")
@@ -115,7 +138,8 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
     if a.stages is None:
-        a.stages = ",".join({"1": PHASE1, "2": PHASE2, "all": PHASE1 + PHASE2}[a.phase] + ["bundle"])
+        a.stages = ",".join({"1": PHASE1, "2": PHASE2, "all": PHASE1 + PHASE2, "improve": IMPROVE}[a.phase]
+                            + ["bundle"])
     stages = [s.strip() for s in a.stages.split(",") if s.strip()]
     unknown = [s for s in stages if s not in STAGES]
     if unknown:
