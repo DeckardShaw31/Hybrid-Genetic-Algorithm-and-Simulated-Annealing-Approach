@@ -107,6 +107,11 @@ def main():
             ok = all(exact[c]["objective"] is not None for c in CATEGORIES)
             row["exact"] = sum(exact[c]["objective"] for c in CATEGORIES) if ok else None
             row["exact_bound"] = sum(exact[c]["dual_bound"] for c in CATEGORIES)
+            # best proven bound: the solver's dual bound or Proposition 1, whichever is larger (rounded up)
+            row["best_bound"] = sum(max(int(np.ceil(exact[c]["dual_bound"] - 1e-6)), cats[c].lower_bound())
+                                    for c in CATEGORIES)
+            if ok:
+                row["exact_gap_pct"] = round(100 * (row["exact"] - row["best_bound"]) / row["exact"], 1)
             row["exact_optimal"] = all(exact[c]["status"] == "Optimal" for c in CATEGORIES)
             row["exact_s"] = round(sum(exact[c]["runtime_s"] for c in CATEGORIES), 1)
             row["solver"] = exact["nurse"]["solver"]
