@@ -156,7 +156,7 @@ def fig_hgasa():
     ga = ["Generate feasible initial population\nof size $N_{pop}$; evaluate fitness",
           "$k$-way tournament selection\nof two parents",
           "One-point crossover (prob. $p_c$)\nand swap mutation (prob. $p_m$)",
-          "Infeasible child $\\Rightarrow$ replace by a\nnew random feasible chromosome",
+          "Infeasible child $\\Rightarrow$ new random chromosome\n(Phase 1) or mutation undone (Phase 2)",
           "Evaluate children; keep the best $N_{pop}$\n(steady-state replacement)"]
     ys = [7.3, 5.95, 4.6, 3.25, 1.9]
     for y, t in zip(ys, ga):
@@ -169,7 +169,7 @@ def fig_hgasa():
     ax.text(0.85, 0.78, "no", fontsize=7, color=INK2)
     sa = ["Start from best GA solution;\n$T \\leftarrow T_0$",
           "Draw a neighbour with a randomly\nchosen structure $\\mathcal{N}_1,\\dots,\\mathcal{N}_4$",
-          "Repair if infeasible; evaluate fitness",
+          "Infeasible $\\Rightarrow$ random restart (Phase 1)\nor move redrawn (Phase 2); evaluate fitness",
           "Accept if $\\Delta\\leq 0$, otherwise with\nprobability $\\exp(-\\Delta/T)$; update best",
           "Cool: $T \\leftarrow \\lambda T$"]
     for y, t in zip(ys, sa):

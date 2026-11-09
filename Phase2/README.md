@@ -24,8 +24,10 @@ Phase 2 turns the Phase-1 staffing plan into a weekly roster with the fewest nur
 - **Rules:**
   - at most one full-time shift and two shifts per day;
   - no overlapping hours, including the night shift running past midnight;
-  - the rest rule of Wang et al. (no day shift after an evening shift; no day or evening shift after a
-    night shift);
+  - at least 11 h of rest between a shift and any shift of the next day (EU working-time directive).
+    On full-time shifts this is the rule of Wang et al. (no day shift after an evening shift; no day or
+    evening shift after a night shift). It also forbids, for example, a 09:00 part-time shift after a
+    night shift. Two non-overlapping shifts on the same day are allowed (split shift);
   - W1 = 5 consecutive working days and W2 = 6 working days per week;
   - E1 = 3 consecutive nights and E2 = 5 nights per week.
 - **Exact model:** one MILP per staff category, since nothing links the two categories. The candidate pool
@@ -40,7 +42,7 @@ Phase 2 turns the Phase-1 staffing plan into a weekly roster with the fewest nur
 |---|---|
 | Exact model in CPLEX OPL with `using CP;` and a 60-s limit; demand with `==` | HiGHS MILP; demand with `>=`; status, bound and gap reported |
 | Full-time windows 00–08, 08–16, 16–24 in the overlap check | 07–15, 15–22, 22–07, also across midnight |
-| Only "no day shift after a night shift" | Wang et al.'s rest rule (constraint 12) |
+| Only "no day shift after a night shift" | 11-h rest between consecutive days (constraint 12), which equals Wang et al.'s rule on full-time shifts |
 | Weekly-day check counted shifts; night limit checked as `> E2` before assigning | Days counted; limits checked before each assignment |
 | SA selector `if/if/if-else` applied N4 after N1 and N2 | `if/elif`: exactly one move |
 | Invalid child or neighbour replaced by a new random roster; some loops could run forever | Invalid move undone; attempt caps |
@@ -58,15 +60,15 @@ python Phase2/summarize_phase2.py --to-manuscript
 
 Or all of it with `python Phase1_rerun/run_all.py --phase 2 --workers N`.
 
-## First results on the development PC (Python 3.13, SciPy 1.16.3)
+## Optimal head counts
 
-| Instance | Lower bound | Exact (HiGHS) | Exact time | One HGASA run |
-|---|---|---|---|---|
-| medium | 25 (14 + 11) | **27** (15 + 12), optimal | ≈ 5 s | 27–28, ≈ 4 s |
-| large | 44 (24 + 20) | **45** (25 + 20), optimal | ≈ 30 s | 50, ≈ 14 s |
-| large ×2, nurses only | 48 | 50, optimal | ≈ 200 s | — |
+| Instance | Lower bound | Exact (HiGHS) |
+|---|---|---|
+| medium | 25 (14 + 11) | **27** (15 + 12), proven optimal |
+| large | 44 (24 + 20) | **45** (25 + 20), proven optimal |
 
-The exact model is fast at the paper's instance sizes. The thesis reported 9–23 h for CPLEX.
+The exact model takes seconds to a few minutes at these sizes. The thesis reported 9–23 h for CPLEX.
+Run times depend on the machine; the paper uses the times from one workstation for all runs.
 
 ## Output (`Phase2/results/`)
 
