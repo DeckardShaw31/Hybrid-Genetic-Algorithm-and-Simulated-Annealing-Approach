@@ -17,6 +17,8 @@ Stages (default order):
   ssp_sensitivity  one-at-a-time HGASA grid on the medium roster (31 settings x --sens-runs runs)
   ssp_scaling  exact model vs HGASA on 2x, 4x and 8x the large demand (exact: --time-limit per category)
   ssp_summarize    Phase-2 tables, rosters and the scheduling sensitivity figure
+  --phase enumerate: physician-only SO-HGASA (baseline and enhanced) on the seven medium days, then complete
+                   enumeration of all feasible physician-only plans (exact benchmark, about 8-9 h on 48 cores)
   --phase improve: benchmark_enh, main_enh (enhanced SO-HGASA), summarize_enh (weekly plans and Phase-2
                    demand from the enhanced runs), then Phase 2 on that demand with baseline and enhanced
                    HGASA (ssp, ssp_enh, ssp_scaling, ssp_scaling_enh, ssp_sensitivity, ssp_summarize)
@@ -45,7 +47,10 @@ PHASE2 = ["ssp_check", "ssp", "ssp_sensitivity", "ssp_scaling", "ssp_summarize"]
 # The weekly plans of the enhanced SO-HGASA become the Phase-2 demand, so Phase 2 is re-run on them.
 IMPROVE = ["check", "benchmark_enh", "main_enh", "summarize_enh", "ssp_check", "ssp", "ssp_enh",
            "ssp_scaling", "ssp_scaling_enh", "ssp_sensitivity", "ssp_summarize"]
-STAGES = list(dict.fromkeys(PHASE1 + PHASE2 + IMPROVE)) + ["bundle"]
+# Exact benchmark: physician-only SO-HGASA on the seven medium days (both variants), then complete
+# enumeration of all feasible physician-only plans for the 3 Wang problems and the 7 medium days.
+ENUMERATE = ["check", "po_medium", "po_medium_enh", "enumerate"]
+STAGES = list(dict.fromkeys(PHASE1 + PHASE2 + IMPROVE + ENUMERATE)) + ["bundle"]
 ENH1 = ["--set", "seed_fraction=0.2", "--set", "polish=1", "--tag", "enhanced"]
 ENH2 = ["--set", "eliminate=1", "--tag", "enhanced"]
 GATING = {"check", "validate", "ssp_check"}
@@ -78,6 +83,13 @@ def stage_commands(stage, a):
                 [PY, os.path.join("Phase1_rerun", "evaluate_plans.py"), "--from-results", "--all-days",
                  "--plan-tag", "enhanced", "--label", "results_alldays_enhanced"],
                 [PY, os.path.join("Manuscript", "figures", "make_figures.py")]]
+    if stage == "po_medium":
+        return [[PY, r, "--mode", "physician_only", "--instance", "medium", "--days", "0-6", "--runs", str(a.runs)] + w]
+    if stage == "po_medium_enh":
+        return [[PY, r, "--mode", "physician_only", "--instance", "medium", "--days", "0-6", "--runs", str(a.runs)]
+                + ENH1 + w]
+    if stage == "enumerate":
+        return [[PY, os.path.join("Phase1_rerun", "enumerate_plans.py"), "--cases", "all"] + w]
     if stage == "main":
         return [[PY, r, "--instance", "medium,large", "--days", "0-6", "--runs", str(a.runs)] + w]
     if stage == "sensitivity":
@@ -129,7 +141,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--workers", type=int, default=default_workers())
     ap.add_argument("--stages", default=None, help="comma-separated subset of: " + ", ".join(STAGES))
-    ap.add_argument("--phase", choices=["1", "2", "all", "improve"], default="all",
+    ap.add_argument("--phase", choices=["1", "2", "all", "improve", "enumerate"], default="all",
                     help="run the stages of one phase (plus bundle); ignored when --stages is given")
     ap.add_argument("--time-limit", type=float, default=3600.0,
                     help="seconds per exact Phase-2 model and staff category")
@@ -138,7 +150,8 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
     if a.stages is None:
-        a.stages = ",".join({"1": PHASE1, "2": PHASE2, "all": PHASE1 + PHASE2, "improve": IMPROVE}[a.phase]
+        a.stages = ",".join({"1": PHASE1, "2": PHASE2, "all": PHASE1 + PHASE2, "improve": IMPROVE,
+                             "enumerate": ENUMERATE}[a.phase]
                             + ["bundle"])
     stages = [s.strip() for s in a.stages.split(",") if s.strip()]
     unknown = [s for s in stages if s not in STAGES]
