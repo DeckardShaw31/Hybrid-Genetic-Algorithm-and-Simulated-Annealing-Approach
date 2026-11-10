@@ -43,6 +43,7 @@ CASES = {   # name: (mode, instance, day); ordered from cheap to expensive
     "wang_problem2": ("physician_only", "wang_problem2", 0),
 }
 SEED = 20261110
+VERSION = 2   # v2: final ranking over distinct plans; all evaluations saved
 
 
 def staffing_cost(mode, chrom):
@@ -132,8 +133,17 @@ def run_case(name, workers, reps, final_reps, top, count_only=False):
             print(f"  {name}: {len(results)} simulated, {len(todo)} left, {pruned} pruned, incumbent {incumbent:.2f}, "
                   f"{(time.time() - t0) / 60:.1f} min", flush=True)
     simulated = len(results)
-    results += [(c.tolist(), ev(c)[0]) for _, _, c in seeds]
-    results.sort(key=lambda x: x[1])
+    known = {tuple(p) for p, _ in results}
+    results += [(c.tolist(), ev(c)[0]) for _, _, c in seeds if tuple(c.tolist()) not in known]
+    uniq = {}
+    for p, z in results:                       # one entry per distinct plan
+        uniq.setdefault(tuple(p), z)
+    results = sorted(([list(p), z] for p, z in uniq.items()), key=lambda x: x[1])
+    import gzip
+    with gzip.open(os.path.join(OUT, f"{name}_all_plans.csv.gz"), "wt") as f:   # every evaluated plan
+        f.write("plan,objective_crn\n")
+        for p, z in results:
+            f.write(f"\"{p}\",{z:.4f}\n")
     finals = []
     for plan, z in results[:top]:
         r = ev.reevaluate(np.asarray(plan), final_reps, SEED + 7)
@@ -145,7 +155,7 @@ def run_case(name, workers, reps, final_reps, top, count_only=False):
         r = ev.reevaluate(c, final_reps, SEED + 7)
         so.append({"tag": tag, "run": run, "plan": c.tolist(), "objective": round(r["objective"], 3),
                    "objective_hw": round(r["objective_hw"], 3)})
-    res = {"case": name, "mode": mode, "instance": instance, "day": day, "reps": reps, "final_reps": final_reps,
+    res = {"case": name, "version": VERSION, "mode": mode, "instance": instance, "day": day, "reps": reps, "final_reps": final_reps,
            "seed": SEED, "feasible_plans": len(rows), "simulated_plans": simulated, "pruned_during_run": pruned,
            "incumbent_from_so_hgasa": incumbent, "sao_optimum": {"plan": results[0][0], "objective_crn": results[0][1]},
            "top_reevaluated": finals, "so_hgasa_plans_reevaluated": so, "published": PUBLISHED.get(name),
@@ -202,7 +212,8 @@ def main():
         return
     names = list(CASES) if a.cases == "all" else [c.strip() for c in a.cases.split(",")]
     for name in names:
-        if not a.count and os.path.exists(os.path.join(OUT, f"{name}.json")):
+        path = os.path.join(OUT, f"{name}.json")
+        if not a.count and os.path.exists(path) and json.load(open(path)).get("version") == VERSION:
             print(f"{name}: done, skipped")
             continue
         run_case(name, a.workers, a.reps, a.final_reps, a.top, count_only=a.count)
