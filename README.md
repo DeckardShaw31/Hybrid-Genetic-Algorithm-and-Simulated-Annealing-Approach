@@ -65,3 +65,24 @@ python Phase1_rerun\run_all.py --workers N
 - Logs go to `Phase1_rerun/results/logs/`.
 - The final stage writes `results_bundle_<host>_<time>.zip` to the repository root. It contains all
   results, logs, figures and the machine report.
+- `--phase improve` runs the enhanced SO-HGASA (load-based seeding and polishing) and the enhanced rostering
+  HGASA (staff elimination), then Phase 2 on the enhanced plans. `--phase enumerate` runs the complete
+  enumeration of the physician-only cases (about 8–9 h on 48 cores). The docstring of `run_all.py` lists
+  every stage.
+
+## Results in the repository
+
+The outputs of the runs reported in the paper are included, so the tables can be checked without
+re-running (the full set takes about a day on 48 cores):
+
+| Path | Content |
+|---|---|
+| `Phase1_rerun/results/summary_runs.csv`, `summary_days.csv` | Every Phase-1 run (basic = `baseline`, proposed = `enhanced`) and the per-day summaries |
+| `Phase1_rerun/results/weekly_plan_*.csv`, `phase2_demand_*.csv` | Best weekly plans and the Phase-2 demand built from them |
+| `Phase1_rerun/results/validation_wang_calibrated.csv`, `calibration_truncation.txt` | Validation against Wang et al. and the calibration of the truncation point |
+| `Phase1_rerun/results/enumeration/`, `enumeration_summary.csv` | Complete enumeration of the ten physician-only cases, including each SO-HGASA run's final plan evaluated on the common 5,000 replications |
+| `Phase1_rerun/results/plan_evaluations_*.csv`, `replications_*.csv`, `sensitivity_planning.csv` | Plan re-evaluations (rule-based comparison), the replication study and the Phase-1 sensitivity grid |
+| `Phase1_rerun/results/nurse_physician/`, `physician_only/` | Per-run details of the Phase-1 runs |
+| `Phase2/results/ssp_results.csv`, `ssp_runs.csv`, `roster_*.csv`, `sensitivity_scheduling.csv` | Exact and HGASA rostering results, rosters and the Phase-2 sensitivity grid |
+| `Phase2/results/exact/`, `hgasa/` | Per-run details of the Phase-2 runs |
+| `Manuscript/figures/` | All figures, the graphical abstract and `make_figures.py`, which regenerates them |

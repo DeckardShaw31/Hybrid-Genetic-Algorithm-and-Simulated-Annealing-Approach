@@ -1,0 +1,34 @@
+staff,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday
+nurse 1,evening,evening,evening,evening,evening,-,day
+nurse 2,day,evening,evening,-,evening,evening,evening
+nurse 3,day,day,day,day,day,-,day
+nurse 4,night,-,day,day,day,day,evening
+nurse 5,night,-,day,day,day,day,evening
+nurse 6,evening,evening,evening,evening,-,day,day
+nurse 7,day,evening+PT10,evening,evening,-,day,day
+nurse 8,day,day,-,evening,evening,evening,evening
+nurse 9,evening,-,day,evening,evening,night,-
+nurse 10,evening,night,-,day,day,day,-
+nurse 11,-,day,evening,night,night,night,-
+nurse 12,day,day,day,night,-,evening,-
+nurse 13,-,night,night,-,day,evening,night
+nurse 14,evening,evening,night,-,night,-,evening+PT09
+nurse 15,night,-,-,day,evening,evening,night
+nurse coverage,5/5/3/0/0,4/5/2/0/1,5/5/2/0/0,5/5/2/0/0,5/5/2/0/0,5/5/2/0/0,4/5/2/1/0
+nurse demand,5/5/3/0/0,4/5/2/0/1,5/5/2/0/0,5/5/2/0/0,5/5/2/0/0,5/5/2/0/0,4/5/2/1/0
+nurse shifts,day evening night PT09 PT10,,,,,,
+physician 1,evening,-,day,evening,evening,evening,evening
+physician 2,evening,-,day,evening,evening,evening,evening
+physician 3,day,evening,evening,evening,evening,-,day
+physician 4,day,evening,evening,-,evening,night,-
+physician 5,day,evening,-,day,day,day,day
+physician 6,day,day,day,day,-,day,evening
+physician 7,evening,night+PT10,night,night,-,evening,night
+physician 8,-,day,night,-,day,day,day
+physician 9,evening,evening,evening,night,night,-,PT09
+physician 10,night,night,-,day,day,evening,evening
+physician 11,-,day,evening,evening+PT10,night,night,-
+physician 12,night,-,day,-,day,day,night
+physician coverage,4/4/2/0/0,3/4/2/0/1,4/4/2/0/0,3/4/2/0/1,4/4/2/0/0,4/4/2/0/0,3/4/2/1/0
+physician demand,4/4/2/0/0,3/4/2/0/1,4/4/2/0/0,3/4/2/0/1,4/4/2/0/0,4/4/2/0/0,3/4/2/1/0
+physician shifts,day evening night PT09 PT10,,,,,,

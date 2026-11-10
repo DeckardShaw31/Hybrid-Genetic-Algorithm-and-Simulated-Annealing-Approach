@@ -1,0 +1,8 @@
+Calibration: hospital staffing 5/5/3, actual average rates, TIT; target mean first wait 28.4 min (III 2.8, IV 36.9); 600 reps
+c=2.50 truncated means 6.99/11.65 min  first wait   9.2  III  1.9  IV  11.5
+c=3.00 truncated means 7.59/12.64 min  first wait  18.2  III  2.6  IV  23.3
+c=3.25 truncated means 7.82/13.03 min  first wait  23.7  III  2.9  IV  30.5
+c=3.50 truncated means 8.02/13.37 min  first wait  29.6  III  3.2  IV  38.3
+c=3.75 truncated means 8.19/13.65 min  first wait  35.4  III  3.5  IV  45.9
+c=4.00 truncated means 8.33/13.88 min  first wait  40.9  III  3.6  IV  53.2
+untruncated: see validation_wang.csv (cap=none)

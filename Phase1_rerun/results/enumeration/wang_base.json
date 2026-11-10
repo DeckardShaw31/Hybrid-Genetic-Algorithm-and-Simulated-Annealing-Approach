@@ -1,0 +1,533 @@
+{
+ "case": "wang_base",
+ "mode": "physician_only",
+ "instance": "wang_base",
+ "day": 0,
+ "reps": 500,
+ "final_reps": 5000,
+ "seed": 20261110,
+ "feasible_plans": 19134,
+ "simulated_plans": 10865,
+ "pruned_during_run": 0,
+ "incumbent_from_so_hgasa": 90.58235914611512,
+ "sao_optimum": {
+  "plan": [
+   4,
+   4,
+   2,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "objective_crn": 90.58235914611512
+ },
+ "top_reevaluated": [
+  {
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 90.582,
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 90.582,
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 90.582,
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 90.582,
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 90.582,
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 90.582,
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 90.582,
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 90.582,
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "plan": [
+    3,
+    4,
+    2,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 90.711,
+   "objective": 90.29,
+   "objective_hw": 0.327
+  },
+  {
+   "plan": [
+    3,
+    4,
+    2,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 90.711,
+   "objective": 90.29,
+   "objective_hw": 0.327
+  }
+ ],
+ "so_hgasa_plans_reevaluated": [
+  {
+   "tag": "baseline",
+   "run": 1,
+   "plan": [
+    3,
+    3,
+    2,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1
+   ],
+   "objective": 94.555,
+   "objective_hw": 0.463
+  },
+  {
+   "tag": "baseline",
+   "run": 2,
+   "plan": [
+    3,
+    4,
+    2,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0
+   ],
+   "objective": 90.245,
+   "objective_hw": 0.317
+  },
+  {
+   "tag": "baseline",
+   "run": 3,
+   "plan": [
+    3,
+    3,
+    2,
+    0,
+    1,
+    0,
+    1,
+    0,
+    2
+   ],
+   "objective": 93.919,
+   "objective_hw": 0.252
+  },
+  {
+   "tag": "baseline",
+   "run": 4,
+   "plan": [
+    3,
+    4,
+    2,
+    0,
+    2,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 93.071,
+   "objective_hw": 0.305
+  },
+  {
+   "tag": "baseline",
+   "run": 5,
+   "plan": [
+    3,
+    4,
+    2,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 90.29,
+   "objective_hw": 0.327
+  },
+  {
+   "tag": "baseline",
+   "run": 6,
+   "plan": [
+    3,
+    4,
+    2,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1
+   ],
+   "objective": 92.057,
+   "objective_hw": 0.257
+  },
+  {
+   "tag": "baseline",
+   "run": 7,
+   "plan": [
+    3,
+    4,
+    2,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 91.957,
+   "objective_hw": 0.365
+  },
+  {
+   "tag": "baseline",
+   "run": 8,
+   "plan": [
+    3,
+    3,
+    2,
+    0,
+    1,
+    0,
+    1,
+    0,
+    2
+   ],
+   "objective": 93.919,
+   "objective_hw": 0.252
+  },
+  {
+   "tag": "baseline",
+   "run": 9,
+   "plan": [
+    3,
+    4,
+    2,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0
+   ],
+   "objective": 90.245,
+   "objective_hw": 0.317
+  },
+  {
+   "tag": "baseline",
+   "run": 10,
+   "plan": [
+    3,
+    3,
+    2,
+    0,
+    0,
+    1,
+    1,
+    0,
+    1
+   ],
+   "objective": 92.564,
+   "objective_hw": 0.326
+  },
+  {
+   "tag": "enhanced",
+   "run": 1,
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "tag": "enhanced",
+   "run": 2,
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "tag": "enhanced",
+   "run": 3,
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "tag": "enhanced",
+   "run": 4,
+   "plan": [
+    3,
+    4,
+    2,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 90.29,
+   "objective_hw": 0.327
+  },
+  {
+   "tag": "enhanced",
+   "run": 5,
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "tag": "enhanced",
+   "run": 6,
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "tag": "enhanced",
+   "run": 7,
+   "plan": [
+    3,
+    4,
+    2,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 90.29,
+   "objective_hw": 0.327
+  },
+  {
+   "tag": "enhanced",
+   "run": 8,
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 89.877,
+   "objective_hw": 0.265
+  },
+  {
+   "tag": "enhanced",
+   "run": 9,
+   "plan": [
+    3,
+    4,
+    2,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 91.957,
+   "objective_hw": 0.365
+  },
+  {
+   "tag": "enhanced",
+   "run": 10,
+   "plan": [
+    4,
+    4,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 89.877,
+   "objective_hw": 0.265
+  }
+ ],
+ "published": 86.656,
+ "runtime_h": 0.366
+}

@@ -1,0 +1,533 @@
+{
+ "case": "wang_problem2",
+ "mode": "physician_only",
+ "instance": "wang_problem2",
+ "day": 0,
+ "reps": 500,
+ "final_reps": 5000,
+ "seed": 20261110,
+ "feasible_plans": 117850,
+ "simulated_plans": 84979,
+ "pruned_during_run": 0,
+ "incumbent_from_so_hgasa": 157.68371848669733,
+ "sao_optimum": {
+  "plan": [
+   6,
+   7,
+   4,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0
+  ],
+  "objective_crn": 157.68371848669733
+ },
+ "top_reevaluated": [
+  {
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 157.684,
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 157.684,
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 157.684,
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 157.684,
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 157.684,
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 157.684,
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 157.684,
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "plan": [
+    7,
+    7,
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 157.898,
+   "objective": 157.297,
+   "objective_hw": 0.333
+  },
+  {
+   "plan": [
+    7,
+    7,
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 157.898,
+   "objective": 157.297,
+   "objective_hw": 0.333
+  },
+  {
+   "plan": [
+    7,
+    7,
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective_crn": 157.898,
+   "objective": 157.297,
+   "objective_hw": 0.333
+  }
+ ],
+ "so_hgasa_plans_reevaluated": [
+  {
+   "tag": "baseline",
+   "run": 1,
+   "plan": [
+    5,
+    5,
+    5,
+    0,
+    1,
+    1,
+    1,
+    1,
+    2
+   ],
+   "objective": 169.967,
+   "objective_hw": 0.444
+  },
+  {
+   "tag": "baseline",
+   "run": 2,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    1,
+    0,
+    0,
+    2
+   ],
+   "objective": 162.88,
+   "objective_hw": 0.229
+  },
+  {
+   "tag": "baseline",
+   "run": 3,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1
+   ],
+   "objective": 157.777,
+   "objective_hw": 0.305
+  },
+  {
+   "tag": "baseline",
+   "run": 4,
+   "plan": [
+    5,
+    8,
+    3,
+    0,
+    2,
+    1,
+    1,
+    0,
+    0
+   ],
+   "objective": 163.517,
+   "objective_hw": 0.416
+  },
+  {
+   "tag": "baseline",
+   "run": 5,
+   "plan": [
+    6,
+    6,
+    4,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1
+   ],
+   "objective": 158.875,
+   "objective_hw": 0.377
+  },
+  {
+   "tag": "baseline",
+   "run": 6,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0
+   ],
+   "objective": 160.113,
+   "objective_hw": 0.354
+  },
+  {
+   "tag": "baseline",
+   "run": 7,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0
+   ],
+   "objective": 157.13,
+   "objective_hw": 0.374
+  },
+  {
+   "tag": "baseline",
+   "run": 8,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "tag": "baseline",
+   "run": 9,
+   "plan": [
+    6,
+    6,
+    4,
+    0,
+    2,
+    0,
+    1,
+    0,
+    1
+   ],
+   "objective": 161.19,
+   "objective_hw": 0.347
+  },
+  {
+   "tag": "baseline",
+   "run": 10,
+   "plan": [
+    5,
+    7,
+    3,
+    0,
+    1,
+    1,
+    1,
+    0,
+    1
+   ],
+   "objective": 160.718,
+   "objective_hw": 0.471
+  },
+  {
+   "tag": "enhanced",
+   "run": 1,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "tag": "enhanced",
+   "run": 2,
+   "plan": [
+    7,
+    7,
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 157.297,
+   "objective_hw": 0.333
+  },
+  {
+   "tag": "enhanced",
+   "run": 3,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0
+   ],
+   "objective": 157.13,
+   "objective_hw": 0.374
+  },
+  {
+   "tag": "enhanced",
+   "run": 4,
+   "plan": [
+    7,
+    7,
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 157.297,
+   "objective_hw": 0.333
+  },
+  {
+   "tag": "enhanced",
+   "run": 5,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "tag": "enhanced",
+   "run": 6,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "tag": "enhanced",
+   "run": 7,
+   "plan": [
+    7,
+    7,
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 157.297,
+   "objective_hw": 0.333
+  },
+  {
+   "tag": "enhanced",
+   "run": 8,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0
+   ],
+   "objective": 157.13,
+   "objective_hw": 0.374
+  },
+  {
+   "tag": "enhanced",
+   "run": 9,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 156.953,
+   "objective_hw": 0.379
+  },
+  {
+   "tag": "enhanced",
+   "run": 10,
+   "plan": [
+    6,
+    7,
+    4,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "objective": 156.953,
+   "objective_hw": 0.379
+  }
+ ],
+ "published": 143.458,
+ "runtime_h": 3.458
+}

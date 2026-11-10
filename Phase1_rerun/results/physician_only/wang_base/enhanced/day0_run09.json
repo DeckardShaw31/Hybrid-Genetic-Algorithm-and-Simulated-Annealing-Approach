@@ -1,0 +1,83 @@
+{
+ "mode": "physician_only",
+ "instance": "wang_base",
+ "day": 0,
+ "params": {
+  "population_size": 50,
+  "num_generation": 200,
+  "tournament_size": 3,
+  "crossover_probability": 1.0,
+  "mutation_probability": 0.3,
+  "initial_temperature": 100.0,
+  "final_temperature": 1.0,
+  "cooling_rate": 0.95,
+  "n_reps": 500,
+  "seed_fraction": 0.2,
+  "polish": 1
+ },
+ "job_seed": 1811340109189190503,
+ "model": "wang_aligned_v1",
+ "best_chromosome": [
+  3,
+  4,
+  2,
+  1,
+  0,
+  0,
+  0,
+  0,
+  0
+ ],
+ "best_objective_crn": 92.81497543180001,
+ "best_elements_crn": [
+  70.0,
+  3.0,
+  0.0,
+  0.0,
+  18.22824324584341,
+  0.028910728652204284
+ ],
+ "ga_best_chromosome": [
+  3,
+  5,
+  2,
+  0,
+  0,
+  1,
+  0,
+  0,
+  0
+ ],
+ "ga_best_objective_crn": 93.15918961538767,
+ "sa_iterations": 90,
+ "unique_evaluations": 172,
+ "cache_hits": 381,
+ "seeded": 10,
+ "sa_best_objective_crn": 92.81497543180001,
+ "polish_passes": 1,
+ "polish_moves": 0,
+ "runtime_s": 359.9914353999775,
+ "simulation_s": 359.94978230120614,
+ "reevaluation": {
+  "objective": 91.39804498898394,
+  "objective_hw": 0.7144769456578139,
+  "waiting": 16.873876156112022,
+  "waiting_hw": 0.7120597598989953,
+  "waiting_sd": 11.47471383564842,
+  "delay": 0.008056277623969963,
+  "delay_hw": 0.0032013692547410433,
+  "staffing_cost": 74.5,
+  "hours": [
+   70.0,
+   3.0,
+   0.0,
+   0.0
+  ],
+  "n_reps": 1000,
+  "seed": 1811340109190190506
+ },
+ "tag": "enhanced",
+ "run": 9,
+ "day_name": "Monday",
+ "finished_at": "2026-11-09 14:53:49"
+}

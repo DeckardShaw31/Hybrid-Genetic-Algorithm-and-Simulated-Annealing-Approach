@@ -1,6 +1,6 @@
-# Whitelist: only what is needed to run the experiments is tracked.
-# Not tracked on purpose: publisher PDFs (copyright), the thesis, slides, the manuscript draft and
-# its notes, the original-code backup, and all run outputs.
+# Whitelist: only what is needed to run the experiments and check the reported results is tracked.
+# Not tracked on purpose: publisher PDFs (copyright), the thesis, slides, the manuscript and its
+# submission files and notes, the original-code backup, and superseded run outputs and logs.
 /*
 !/.gitignore
 !/README.md
@@ -10,10 +10,16 @@
 /Code/_backup_original_*/
 !/Data/
 !/Phase1_rerun/
-/Phase1_rerun/results/
 /Phase1_rerun/DATA_CHECK.md
+# Run outputs: the results reported in the paper are tracked. Superseded imports, the old model's
+# results, smoke tests and logs (which contain local machine paths) are not.
+/Phase1_rerun/results/_before_*/
+/Phase1_rerun/results/legacy_model/
+/Phase1_rerun/results/logs/
+/Phase1_rerun/results/data_check.txt
+/Phase1_rerun/results/**/smoke/
 !/Phase2/
-/Phase2/results/
+/Phase2/results/_archive_*/
 !/tools/
 !/Manuscript/
 /Manuscript/*

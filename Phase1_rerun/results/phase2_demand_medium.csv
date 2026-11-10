@@ -1,0 +1,8 @@
+day,nurse_FT_day,nurse_FT_evening,nurse_FT_night,nurse_PT_8,nurse_PT_9,nurse_PT_10,nurse_PT_14,nurse_PT_15,nurse_PT_19,physician_FT_day,physician_FT_evening,physician_FT_night,physician_PT_8,physician_PT_9,physician_PT_10,physician_PT_14,physician_PT_15,physician_PT_19
+Monday,5,5,3,0,0,0,0,0,0,4,4,2,0,0,0,0,0,0
+Tuesday,4,5,2,0,0,1,0,0,0,3,4,2,0,0,1,0,0,0
+Wednesday,5,5,2,0,0,0,0,0,0,4,4,2,0,0,0,0,0,0
+Thursday,5,5,2,0,0,0,0,0,0,3,4,2,0,0,1,0,0,0
+Friday,5,5,2,0,0,0,0,0,0,4,4,2,0,0,0,0,0,0
+Saturday,5,5,2,0,0,0,0,0,0,4,4,2,0,0,0,0,0,0
+Sunday,4,5,2,0,1,0,0,0,0,3,4,2,0,1,0,0,0,0
